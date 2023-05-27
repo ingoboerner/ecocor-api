@@ -26,7 +26,6 @@ To check that the EcoCor API is up run
 curl http://localhost:8090/exist/restxq/ecocor/info
 ```
 
-
 ## Building the eXist extension
 
 For packaging the ecocor-api code into an eXist extension archive (XAR)
@@ -41,3 +40,20 @@ ant
 
 creates an  ecocor-x.x.x.xar archive in the `build` directory. This can be
 installed into an existing eXist DB instance.
+
+## Visual Studio Code integration
+
+The [existdb-vscode](https://marketplace.visualstudio.com/items?itemName=eXist-db.existdb-vscode)
+extension allows for developing XQuery code targeted at eXistdb and sync it with
+a running database instance. We provide a configuration template that integrates
+VS Code with the eXist instance from `docker compose`. Run
+
+```sh
+ant existdb.json
+# or
+cp .existdb.json.tmpl .existdb.json
+# and edit the docker.port placeholder
+```
+
+to create a configuration file. For usage details see the
+[extension's documentation](https://marketplace.visualstudio.com/items?itemName=eXist-db.existdb-vscode).

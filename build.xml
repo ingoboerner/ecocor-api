@@ -89,4 +89,33 @@
   <target name="clean" description="remove builds">
     <delete dir="${build.dir}"/>
   </target>
+
+  <target
+    name="existdb.json"
+    description="Create .existdb.json for editor integration"
+  >
+    <property name="editor.config.target" value=".existdb.json"/>
+    <condition property="existdb.json.available">
+      <available file="${editor.config.target}"/>
+    </condition>
+    <input
+      message="Overwrite existing ${editor.config.target}?"
+      validargs="y,n"
+      addproperty="yes.or.no"
+      if:true="${existdb.json.available}"
+    />
+    <condition property="overwrite" else="false">
+      <equals arg1="${yes.or.no}" arg2="y"/>
+    </condition>
+    <copy
+      file=".existdb.json.tmpl"
+      tofile="${editor.config.target}"
+      filtering="true"
+      overwrite="${overwrite}"
+    >
+      <filterset>
+        <filter token="docker.port" value="${docker.port}"/>
+      </filterset>
+    </copy>
+  </target>
 </project>
