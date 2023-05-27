@@ -1,0 +1,14 @@
+name: ecocor
+services:
+  api:
+    image: "ecocor-api"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - GITHUB_WEBHOOK_SECRET=qwerty
+    environment:
+      - EXIST_PASSWORD=
+      - ECOCOR_API_BASE=http://localhost:8090/exist/restxq/ecocor
+    ports:
+      - "8090:8080"
