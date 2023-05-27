@@ -1,0 +1,36 @@
+openapi: "3.0.0"
+
+info:
+  version: 0.0.1
+  title: EcoCor API
+  contact:
+    email: ""
+  termsOfService: "https://ecocor.org"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+servers:
+  - url: https://ecocor.org/api
+
+paths:
+  /info:
+    get:
+      summary: API info
+      description: >-
+        Shows version numbers of the ecocor-api app and the underlying
+        eXist-db.
+      operationId: api-info
+      tags: [public]
+      responses:
+        '200':
+          description: Returns JSON object
+          content:
+            application/json:
+              example:
+                {
+                  "existdb": "6.0.1",
+                  "name": "EcoCor",
+                  "status": "beta",
+                  "version": "1.0.0"
+                }
