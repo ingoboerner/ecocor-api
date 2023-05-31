@@ -34,3 +34,254 @@ paths:
                   "status": "beta",
                   "version": "1.0.0"
                 }
+  /corpora:
+    get:
+      summary: List available corpora
+      operationId: list-corpora
+      tags: [public]
+      responses:
+        '200':
+          description: Returns list of available corpora
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+              example:
+                [
+                  {
+                    "name": "en",
+                    "title": "English EcoCor",
+                    "repository": "https://github.com/dracor-org/eco_en",
+                    "uri": "https://ecocor.org/api/corpora/en",
+                  }
+                ]
+    post:
+      summary: Add new corpus
+      operationId: post-corpora
+      tags: [admin]
+      requestBody:
+        description: |
+          The meta data for the new corpus can be provided in either JSON or XML
+          format. The JSON structure is a straightforward object providing
+          corpus name, title and (optionally) a repository URL. The XML format
+          needs to be a TEI document with `teiCorpus` as its root element. The
+          corpus title needs to be provided in the `titleStmt` while the name
+          and repo URL are encoded in particular `idno` elements in the
+          `publicationStmt` (see example).
+
+          NB: Contrary to the TEI schema our teiCorpus document must not contain
+          the `TEI` elements for individual works.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - title
+              properties:
+                name:
+                  type: string
+                  description: corpus name
+                title:
+                  type: string
+                  description: corpus title
+                repository:
+                  type: string
+                  description: Git repository URL
+            example: |
+              {
+                "name": "en",
+                "title": "English EcoCor",
+                "repository": "https://github.com/dracor-org/eco_en"
+              }
+          application/xml:
+            schema:
+              type: string
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <teiCorpus xmlns="http://www.tei-c.org/ns/1.0">
+                <teiHeader>
+                  <fileDesc>
+                    <titleStmt>
+                      <title>English EcoCor</title>
+                    </titleStmt>
+                    <publicationStmt>
+                      <publisher>EcoCor</publisher>
+                      <idno type="URI" xml:base="https://ecocor.org/">en</idno>
+                      <idno type="repo">https://github.com/dracor-org/eco_en</idno>
+                    </publicationStmt>
+                  </fileDesc>
+                </teiHeader>
+              </teiCorpus>
+      responses:
+        '200':
+          description: Returns corpus metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        '409':
+          description: Corpus already exists
+        '400':
+          description: Posted data lacks required properties or is malformed
+
+  /corpora/{corpusname}:
+    get:
+      summary: List corpus content
+      description: >-
+        Lists all works available in the corpus including the id, title,
+        author(s) and other meta data.
+      operationId: list-corpus-content
+      tags: [public]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+      responses:
+        '200':
+          description: Returns object representing corpus contents
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - title
+                properties:
+                  title:
+                    type: string
+                    description: corpus title
+        '404':
+          description: Corpus not found
+    post:
+      summary: Load corpus data from its repository
+      description: >-
+        This endpoint requires authorization.
+
+        Posting `{"load": true}` to the corpus URI reloads the data for this
+        corpus from its repository (if defined).
+      operationId: load-corpus
+      tags: [admin]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - load
+              properties:
+                load:
+                  type: boolean
+            example: |
+              {"load": true}
+      responses:
+        '202':
+          description: Corpus update has been scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+              example: |
+                {
+                  "message": "corpus update scheduled"
+                }
+        '404':
+          description: Corpus not found
+        '409':
+          description: >-
+            Corpus update could not be scheduled.
+
+            This is the response when another update has not yet finished.
+    delete:
+      summary: Remove corpus from database
+      operationId: delete-corpus
+      tags: [admin]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+      responses:
+        '200':
+          description: Corpus deleted
+        '404':
+          description: Corpus not found
+
+  /corpora/{corpusname}/works:
+    get:
+      summary: Get list of works in corpus
+      operationId: works-list
+      tags: [public]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+        - $ref: "#/components/parameters/workname"
+      responses:
+        '200':
+          description: Returns an array with work meta data
+          content:
+            application/json:
+              schema:
+                type: array
+                description: array of works
+                items:
+                  type: object
+
+  /corpora/{corpusname}/works/{workname}:
+    get:
+      summary: Get metadata for a single work
+      operationId: work-info
+      tags: [public]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+        - $ref: "#/components/parameters/workname"
+      responses:
+        '200':
+          description: Returns an object with work meta data
+          content:
+            application/json:
+              schema:
+                type: object
+    delete:
+      summary: Remove a single work from the corpus
+      operationId: work-delete
+      tags: [admin]
+      parameters:
+        - $ref: "#/components/parameters/corpusname"
+        - $ref: "#/components/parameters/workname"
+      responses:
+        '200':
+          description: Play has been removed
+        '404':
+          description: No such work under this URI
+
+components:
+  parameters:
+    corpusname:
+      name: corpusname
+      in: path
+      required: true
+      description: >
+        Short name of the corpus as provided in the `name` property of the result
+        objects from the [/corpora](#/public/list-corpora) endpoint
+      schema:
+        type: string
+      examples:
+        EnglishEcoCor:
+          value: en
+          summary: English EcoCor
+        GermanEcoCor:
+          value: de
+          summary: German EcoCor
+    workname:
+      name: workname
+      in: path
+      required: true
+      description: >
+        Name parameter (or "slug") of the work as provided in the `name`
+        property of the result objects of the
+        [/corpora/{corpusname}](#/public/list-corpus-content) endpoint.
+      schema:
+        type: string
+      examples:
+        frankenstein:
+          value: 1818_Shelley_Frankenstein
+          summary: "Shelly: Frankenstein (English EcoCor)"
