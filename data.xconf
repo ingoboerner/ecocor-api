@@ -3,4 +3,9 @@
   <index xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tei="http://www.tei-c.org/ns/1.0">
     <fulltext default="none" attributes="false"/>
   </index>
+  <triggers>
+    <trigger class="org.exist.collections.triggers.XQueryTrigger">
+      <parameter name="url" value="xmldb:exist:///db/apps/ecocor/modules/trigger.xqm"/>
+    </trigger>
+  </triggers>
 </collection>
