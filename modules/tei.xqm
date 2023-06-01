@@ -242,14 +242,9 @@ declare function ectei:get-authors($tei as node()) as map()* {
   let $nameEn := ectei:get-sort-name($author, 'eng')
   let $fullnameEn := ectei:get-full-name($author, 'eng')
   let $shortnameEn := ectei:get-short-name($author, 'eng')
+  let $wikidata-id := tokenize($author/@ref, 'https://www.wikidata.org/wiki/')[2]
   let $refs := array {
-    for $idno in $author/tei:idno[@type]
-    let $ref := $idno => normalize-space()
-    let $type := string($idno/@type)
-    return map {
-      "ref": $ref,
-      "type": $type
-    }
+    if ($wikidata-id) then map{ "wikidata": $wikidata-id } else ()
   }
   let $aka := array {
     for $name in $author/tei:persName[position() > 1]
