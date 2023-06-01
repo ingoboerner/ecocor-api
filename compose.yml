@@ -12,3 +12,7 @@ services:
       - ECOCOR_API_BASE=http://localhost:8090/exist/restxq/ecocor
     ports:
       - "8090:8080"
+  extractor:
+    build: https://github.com/dh-network/ecocor-extractor.git#main
+    ports:
+      - "8033:80"
