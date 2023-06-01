@@ -413,11 +413,11 @@ function api:delete-corpus($corpusname, $auth) {
  :)
 declare
   %rest:GET
-  %rest:path("/ecocor/corpora/{$corpusname}/works")
+  %rest:path("/ecocor/corpora/{$corpusname}/texts")
   %rest:produces("application/json")
   %output:media-type("application/json")
   %output:method("json")
-function api:corpus-works($corpusname) {
+function api:corpus-texts($corpusname) {
   let $corpus := ectei:get-corpus-info-by-name($corpusname)
   let $collection := concat($config:data-root, "/", $corpusname)
   return
@@ -426,24 +426,24 @@ function api:corpus-works($corpusname) {
         <http:response status="404"/>
       </rest:response>
     else
-      array {ectei:get-corpus-work-info($corpusname)}
+      array {ectei:get-corpus-text-info($corpusname)}
 };
 
 (:~
- : Get metadata for a single work
+ : Get metadata for a single text
  :
  : @param $corpusname Corpus name
- : @param $workname Work name
- : @result JSON object with work meta data
+ : @param $textname Text name
+ : @result JSON object with text meta data
  :)
 declare
   %rest:GET
-  %rest:path("/ecocor/corpora/{$corpusname}/works/{$workname}")
+  %rest:path("/ecocor/corpora/{$corpusname}/texts/{$textname}")
   %rest:produces("application/json")
   %output:media-type("application/json")
   %output:method("json")
-function api:work-info($corpusname, $workname) {
-  let $info := ectei:get-work-info($corpusname, $workname)
+function api:text-info($corpusname, $textname) {
+  let $info := ectei:get-text-info($corpusname, $textname)
   return
     if (count($info)) then
       $info
@@ -456,26 +456,26 @@ function api:work-info($corpusname, $workname) {
 (:~
  : Add new or update existing TEI document
  :
- : When sending a PUT request to a new work URI, the request body is stored in
+ : When sending a PUT request to a new text URI, the request body is stored in
  : the database as a new document accessible under that URI. If the URI already
  : exists the corresponding TEI document is updated with the request body.
  :
- : The `workname` parameter of a new URI must consist of lower case ASCII
+ : The `textname` parameter of a new URI must consist of lower case ASCII
  : characters, digits and/or dashes only.
  :
  : @param $corpusname Corpus name
- : @param $workname Work name
+ : @param $textname Text name
  : @param $data TEI document
  : @param $auth Authorization header value
  : @result updated TEI document
  :)
 declare
   %rest:PUT("{$data}")
-  %rest:path("/ecocor/corpora/{$corpusname}/works/{$workname}")
+  %rest:path("/ecocor/corpora/{$corpusname}/texts/{$textname}")
   %rest:header-param("Authorization", "{$auth}")
   %rest:consumes("application/xml", "text/xml")
   %output:method("xml")
-function api:work-tei-put($corpusname, $workname, $data, $auth) {
+function api:text-tei-put($corpusname, $textname, $data, $auth) {
   if (not($auth)) then
     <rest:response>
       <http:response status="401"/>
@@ -483,7 +483,7 @@ function api:work-tei-put($corpusname, $workname, $data, $auth) {
   else
 
   let $corpus := ectei:get-corpus($corpusname)
-  let $doc := ecutil:get-doc($corpusname, $workname)
+  let $doc := ecutil:get-doc($corpusname, $textname)
 
   return
     if (not($corpus)) then
@@ -495,14 +495,14 @@ function api:work-tei-put($corpusname, $workname, $data, $auth) {
       )
     else if (
       not($doc) and
-      not(matches($workname, "^[a-z0-9]+(-?[a-z0-9]+)*$"))
+      not(matches($textname, "^[a-z0-9]+(-?[a-z0-9]+)*$"))
     )
     then
       (
         <rest:response>
           <http:response status="400"/>
         </rest:response>,
-        <message>Unacceptable work name '{$workname}'. Use lower case ASCII characters, digits and dashes only.</message>
+        <message>Unacceptable text name '{$textname}'. Use lower case ASCII characters, digits and dashes only.</message>
       )
     else if (not($data/tei:TEI)) then
       (
@@ -512,33 +512,33 @@ function api:work-tei-put($corpusname, $workname, $data, $auth) {
         <message>TEI document required</message>
       )
     else
-      let $filename := $workname || ".xml"
+      let $filename := $textname || ".xml"
       let $collection := $config:data-root || "/" || $corpusname
       let $result := xmldb:store($collection, $filename, $data/tei:TEI)
       return $data
 };
 
 (:~
- : Remove a single work from the corpus
+ : Remove a single text from the corpus
  :
  : @param $corpusname Corpus name
- : @param $workname Work name
+ : @param $textname Text name
  : @param $auth Authorization header value
  : @result JSON object
  :)
 declare
   %rest:DELETE
-  %rest:path("/ecocor/corpora/{$corpusname}/works/{$workname}")
+  %rest:path("/ecocor/corpora/{$corpusname}/texts/{$textname}")
   %rest:header-param("Authorization", "{$auth}")
   %output:method("json")
-function api:play-delete($corpusname, $workname, $data, $auth) {
+function api:play-delete($corpusname, $textname, $data, $auth) {
   if (not($auth)) then
     <rest:response>
       <http:response status="401"/>
     </rest:response>
   else
 
-  let $doc := ecutil:get-doc($corpusname, $workname)
+  let $doc := ecutil:get-doc($corpusname, $textname)
 
   return
     if (not($doc)) then
@@ -546,7 +546,7 @@ function api:play-delete($corpusname, $workname, $data, $auth) {
         <http:response status="404"/>
       </rest:response>
     else
-      let $filename := $workname || ".xml"
+      let $filename := $textname || ".xml"
       let $collection := $config:data-root || "/" || $corpusname
       return (xmldb:remove($collection, $filename))
 };

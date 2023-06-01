@@ -11,19 +11,19 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace json = "http://www.w3.org/2013/XSL/json";
 
 (:~
- : Provide map of files and paths related to a work.
+ : Provide map of files and paths related to a text.
  :
- : @param $url DB URL to work TEI document
+ : @param $url DB URL to text TEI document
  : @return map()
  :)
 declare function ecutil:filepaths ($url as xs:string) as map() {
   let $segments := tokenize($url, "/")
   let $corpusname := $segments[last() - 1]
   let $filename := $segments[last()]
-  let $workname := substring-before($filename, ".xml")
+  let $textname := substring-before($filename, ".xml")
   return map {
     "filename": $filename,
-    "workname": $workname,
+    "textname": $textname,
     "corpusname": $corpusname,
     "collections": map {
       (: "metrics": $config:metrics-root || "/" || $corpusname, :)
@@ -37,17 +37,17 @@ declare function ecutil:filepaths ($url as xs:string) as map() {
 };
 
 (:~
- : Return document for a work.
+ : Return document for a text.
  :
  : @param $corpusname
- : @param $workname
+ : @param $textname
  :)
 declare function ecutil:get-doc(
   $corpusname as xs:string,
-  $workname as xs:string
+  $textname as xs:string
 ) as node()* {
   let $doc := doc(
-    $config:data-root || "/" || $corpusname || "/" || $workname || ".xml"
+    $config:data-root || "/" || $corpusname || "/" || $textname || ".xml"
   )
   return $doc
 };

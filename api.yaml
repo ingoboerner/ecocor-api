@@ -73,7 +73,7 @@ paths:
           `publicationStmt` (see example).
 
           NB: Contrary to the TEI schema our teiCorpus document must not contain
-          the `TEI` elements for individual works.
+          the `TEI` elements for individual texts.
         content:
           application/json:
             schema:
@@ -132,7 +132,7 @@ paths:
     get:
       summary: List corpus content
       description: >-
-        Lists all works available in the corpus including the id, title,
+        Lists all texts available in the corpus including the id, title,
         author(s) and other meta data.
       operationId: list-corpus-content
       tags: [public]
@@ -194,52 +194,52 @@ paths:
         '404':
           description: Corpus not found
 
-  /corpora/{corpusname}/works:
+  /corpora/{corpusname}/texts:
     get:
-      summary: Get list of works in corpus
-      operationId: works-list
+      summary: Get list of texts in corpus
+      operationId: texts-list
       tags: [public]
       parameters:
         - $ref: "#/components/parameters/corpusname"
-        - $ref: "#/components/parameters/workname"
+        - $ref: "#/components/parameters/textname"
       responses:
         '200':
-          description: Returns an array with work meta data
+          description: Returns an array with text meta data
           content:
             application/json:
               schema:
                 type: array
-                description: array of works
+                description: array of texts
                 items:
                   type: object
 
-  /corpora/{corpusname}/works/{workname}:
+  /corpora/{corpusname}/texts/{textname}:
     get:
-      summary: Get metadata for a single work
-      operationId: work-info
+      summary: Get metadata for a single text
+      operationId: text-info
       tags: [public]
       parameters:
         - $ref: "#/components/parameters/corpusname"
-        - $ref: "#/components/parameters/workname"
+        - $ref: "#/components/parameters/textname"
       responses:
         '200':
-          description: Returns an object with work meta data
+          description: Returns an object with text meta data
           content:
             application/json:
               schema:
                 type: object
     delete:
-      summary: Remove a single work from the corpus
-      operationId: work-delete
+      summary: Remove a single text from the corpus
+      operationId: text-delete
       tags: [admin]
       parameters:
         - $ref: "#/components/parameters/corpusname"
-        - $ref: "#/components/parameters/workname"
+        - $ref: "#/components/parameters/textname"
       responses:
         '200':
           description: Play has been removed
         '404':
-          description: No such work under this URI
+          description: No such text under this URI
 
 components:
   parameters:
@@ -259,12 +259,12 @@ components:
         GermanEcoCor:
           value: de
           summary: German EcoCor
-    workname:
-      name: workname
+    textname:
+      name: textname
       in: path
       required: true
       description: >
-        Name parameter (or "slug") of the work as provided in the `name`
+        Name parameter (or "slug") of the text as provided in the `name`
         property of the result objects of the
         [/corpora/{corpusname}](#/public/list-corpus-content) endpoint.
       schema:

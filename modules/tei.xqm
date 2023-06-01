@@ -29,7 +29,7 @@ declare function ectei:get-corpus(
 };
 
 (:~
- : Extract DraCor ID of a work.
+ : Extract DraCor ID of a text.
  :
  : @param $tei TEI document
  :)
@@ -83,7 +83,7 @@ declare function ectei:get-titles(
  :
  : @param $tei TEI element
  :)
-declare function ectei:get-work-wikidata-id ($tei as element(tei:TEI)) {
+declare function ectei:get-text-wikidata-id ($tei as element(tei:TEI)) {
   let $uri := $tei//tei:standOff/tei:listRelation
     /tei:relation[@name="wikidata"][1]/@passive/string()
   return if (starts-with($uri, 'http://www.wikidata.org/entity/')) then
@@ -266,12 +266,12 @@ declare function ectei:get-authors($tei as node()) as map()* {
 };
 
 (:~
- : Extract meta data for a work.
+ : Extract meta data for a text.
  :
  : @param $corpusname
- : @param $workname
+ : @param $textname
  :)
-declare function ectei:get-work-info($tei as element(tei:TEI)) as map()? {
+declare function ectei:get-text-info($tei as element(tei:TEI)) as map()? {
   if ($tei) then
     let $id := ectei:get-ecocor-id($tei)
     let $titles := ectei:get-titles($tei)
@@ -279,13 +279,13 @@ declare function ectei:get-work-info($tei as element(tei:TEI)) as map()? {
     let $source := $tei//tei:sourceDesc/tei:bibl[@type="digitalSource"]
     let $orig-source := $tei//tei:bibl[@type="originalSource"][1]/normalize-space(.)
     let $authors := ectei:get-authors($tei)
-    let $wikidata-id := ectei:get-work-wikidata-id($tei)
+    let $wikidata-id := ectei:get-text-wikidata-id($tei)
     let $paths := ecutil:filepaths($tei/base-uri())
 
     return map:merge((
       map {
         "id": $id,
-        "name": $paths?workname,
+        "name": $paths?textname,
         "corpus": $paths?corpusname,
         "title": $titles?main,
         "authors": array { for $author in $authors return $author }
@@ -310,29 +310,29 @@ declare function ectei:get-work-info($tei as element(tei:TEI)) as map()? {
 };
 
 (:~
- : Extract meta data for a work identified by corpus and work name.
+ : Extract meta data for a text identified by corpus and text name.
  :
  : @param $corpusname
- : @param $workname
+ : @param $textname
  :)
-declare function ectei:get-work-info(
+declare function ectei:get-text-info(
   $corpusname as xs:string,
-  $workname as xs:string
+  $textname as xs:string
 ) as map()? {
-  let $doc := ecutil:get-doc($corpusname, $workname)
-  return if ($doc) then ectei:get-work-info($doc//tei:TEI) else ()
+  let $doc := ecutil:get-doc($corpusname, $textname)
+  return if ($doc) then ectei:get-text-info($doc//tei:TEI) else ()
 };
 
 (:~
- : Extract meta data for all works in corpus identified by corpusname.
+ : Extract meta data for all texts in corpus identified by corpusname.
  :
  : @param $corpusname
  :)
-declare function ectei:get-corpus-work-info(
+declare function ectei:get-corpus-text-info(
   $corpusname as xs:string
 ) as map()* {
   for $tei in ecutil:get-corpus-docs($corpusname)
-  return ectei:get-work-info($tei)
+  return ectei:get-text-info($tei)
 };
 
 declare function local:to-markdown($input as element()) as item()* {
