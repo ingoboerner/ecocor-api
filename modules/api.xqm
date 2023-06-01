@@ -426,7 +426,7 @@ function api:corpus-works($corpusname) {
         <http:response status="404"/>
       </rest:response>
     else
-      array {()}
+      array {ectei:get-corpus-work-info($corpusname)}
 };
 
 (:~
