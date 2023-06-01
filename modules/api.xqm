@@ -282,6 +282,77 @@ function api:corpus-data($corpusname) {
 };
 
 (:~
+ : Load corpus data from its repository
+ :
+ : Sending a POST request to the corpus URI reloads the data for this corpus
+ : from its repository (if defined). This endpoint requires authorization.
+ :
+ : @param $corpusname Corpus name
+ : @param $auth Authorization header value
+ : @result JSON object
+ :)
+declare
+  %rest:POST
+  %rest:path("/ecocor/corpora/{$corpusname}")
+  %rest:header-param("Authorization", "{$auth}")
+  %output:method("json")
+function api:post-corpus($corpusname, $auth) {
+  if (not($auth)) then
+    (
+      <rest:response>
+        <http:response status="401"/>
+      </rest:response>,
+      map {
+        "message": "authorization required"
+      }
+    )
+  else
+
+  let $corpus := ectei:get-corpus-info-by-name($corpusname)
+
+  return
+    if (not($corpus?name)) then
+      (
+        <rest:response><http:response status="404"/></rest:response>,
+        map {"message": "no such corpus"}
+      )
+    else
+      let $job-name := "load-corpus-" || $corpusname
+      let $params := (
+        <parameters>
+          <param name="corpusname" value="{$corpusname}"/>
+        </parameters>
+      )
+
+      (: delete completed job before scheduling new one :)
+      (: NB: usually this seems to happen automatically but apparently we
+       : cannot rely on it. :)
+      let $jobs := scheduler:get-scheduled-jobs()
+      let $complete := $jobs//scheduler:job
+        [@name=$job-name and scheduler:trigger/state = 'COMPLETE']
+      let $log := if ($complete) then (
+        util:log("info", "deleting completed job"),
+        scheduler:delete-scheduled-job($job-name)
+      ) else ()
+
+      let $result := scheduler:schedule-xquery-periodic-job(
+        $config:app-root || "/jobs/load-corpus.xq",
+        1, $job-name, $params, 0, 0
+      )
+
+      return if ($result) then
+        (
+          <rest:response><http:response status="202"/></rest:response>,
+          map {"message": "corpus update scheduled"}
+        )
+      else
+        (
+          <rest:response><http:response status="409"/></rest:response>,
+          map {"message": "cannot schedule update"}
+        )
+};
+
+(:~
  : Remove corpus from database
  :
  : @param $corpusname Corpus name

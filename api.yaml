@@ -158,24 +158,12 @@ paths:
       description: >-
         This endpoint requires authorization.
 
-        Posting `{"load": true}` to the corpus URI reloads the data for this
+        Sending a POST request to the corpus URI reloads the data for this
         corpus from its repository (if defined).
       operationId: load-corpus
       tags: [admin]
       parameters:
         - $ref: "#/components/parameters/corpusname"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - load
-              properties:
-                load:
-                  type: boolean
-            example: |
-              {"load": true}
       responses:
         '202':
           description: Corpus update has been scheduled
