@@ -15,4 +15,4 @@ services:
   extractor:
     build: https://github.com/dh-network/ecocor-extractor.git#main
     ports:
-      - "8033:80"
+      - "8040:80"
