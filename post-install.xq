@@ -41,7 +41,7 @@ as item()? {
           {
             if (environment-variable("EXTRACTOR_SERVER")) then
               environment-variable("EXTRACTOR_SERVER")
-            else "http://localhost:8040/extractor/"
+            else "http://localhost:8040"
           }
           </extractor>
         </services>

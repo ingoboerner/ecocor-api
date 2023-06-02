@@ -79,6 +79,15 @@ declare function ectei:get-titles(
 };
 
 (:~
+ : Extract text paragraphs.
+ :
+ : @param $tei TEI document
+ :)
+declare function ectei:get-text-paras($tei as element(tei:TEI)) as element(tei:p)* {
+  $tei//tei:text//tei:p[@xml:id]
+};
+
+(:~
  : Extract Wikidata ID for play from standOff.
  :
  : @param $tei TEI element

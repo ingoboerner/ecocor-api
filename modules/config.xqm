@@ -44,7 +44,7 @@ declare variable $config:api-base :=
 
 declare variable $config:data-root := "/db/data/ecocor/tei";
 
-declare variable $config:extractor-root := "/db/data/ecocor/words";
+declare variable $config:entities-root := "/db/data/ecocor/entities";
 
 declare variable $config:webhook-root := "/db/data/ecocor/webhook";
 

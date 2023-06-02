@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        - EXTRACTOR_SERVER=http://extractor
         - GITHUB_WEBHOOK_SECRET=qwerty
     environment:
       - EXIST_PASSWORD=
