@@ -40,4 +40,5 @@ xdb:store-files-from-pattern(
   concat("/db/system/config", $config:data-root), $dir, "data.xconf"
 ),
 xdb:create-collection("/", $config:entities-root),
+xdb:create-collection("/", $config:metrics-root),
 xdb:create-collection("/", $config:webhook-root)

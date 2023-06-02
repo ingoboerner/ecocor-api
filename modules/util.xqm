@@ -26,8 +26,8 @@ declare function ecutil:filepaths ($url as xs:string) as map() {
     "textname": $textname,
     "corpusname": $corpusname,
     "collections": map {
-      (: "metrics": $config:metrics-root || "/" || $corpusname, :)
       "entities": $config:entities-root || "/" || $corpusname,
+      "metrics": $config:metrics-root || "/" || $corpusname,
       "tei": $config:data-root || "/" || $corpusname
     },
     "files": map {

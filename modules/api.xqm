@@ -162,6 +162,7 @@ function api:corpora-post-tei($data, $auth) {
         util:log-system-out($data),
         xmldb:create-collection($config:data-root, $name),
         xmldb:create-collection($config:entities-root, $name),
+        xmldb:create-collection($config:metrics-root, $name),
         xmldb:store($tei-dir, "corpus.xml", $data),
         map {
           "name": $name,
@@ -253,6 +254,7 @@ function api:corpora-post-json($data) {
       util:log-system-out($corpus),
       xmldb:create-collection($config:data-root, $name),
       xmldb:create-collection($config:entities-root, $name),
+      xmldb:create-collection($config:metrics-root, $name),
       xmldb:store($tei-dir, "corpus.xml", $corpus),
       $json
     )
@@ -393,6 +395,7 @@ function api:delete-corpus($corpusname, $auth) {
         (
           xmldb:remove($config:data-root || "/" || $corpusname),
           xmldb:remove($config:entities-root || "/" || $corpusname),
+          xmldb:remove($config:metrics-root || "/" || $corpusname),
           map {
             "message": "corpus deleted",
             "uri": $url

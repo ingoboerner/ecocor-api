@@ -46,6 +46,8 @@ declare variable $config:data-root := "/db/data/ecocor/tei";
 
 declare variable $config:entities-root := "/db/data/ecocor/entities";
 
+declare variable $config:metrics-root := "/db/data/ecocor/metrics";
+
 declare variable $config:webhook-root := "/db/data/ecocor/webhook";
 
 declare variable $config:webhook-secret :=
