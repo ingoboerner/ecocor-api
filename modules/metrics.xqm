@@ -61,3 +61,15 @@ declare function metrics:update() as xs:string* {
   let $url := $tei/base-uri()
   return metrics:update($url)
 };
+
+declare function metrics:corpus ($corpus as xs:string) {
+  let $collection-uri := concat($config:data-root, "/", $corpus)
+  let $col := collection($collection-uri)
+  let $metrics-uri := concat($config:metrics-root, "/", $corpus)
+  let $metrics := collection($metrics-uri)
+  return map {
+    "texts": count($col/tei:TEI),
+    "words": sum($metrics//words),
+    "updated": max($metrics//metrics/xs:dateTime(@updated))
+  }
+};

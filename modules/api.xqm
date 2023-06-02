@@ -6,6 +6,7 @@ import module namespace config = "http://ecocor.org/ns/exist/config" at "config.
 import module namespace ecutil = "http://ecocor.org/ns/exist/util" at "util.xqm";
 import module namespace ectei = "http://ecocor.org/ns/exist/tei" at "tei.xqm";
 import module namespace entities = "http://ecocor.org/ns/exist/entities" at "entities.xqm";
+import module namespace metrics = "http://ecocor.org/ns/exist/metrics" at "metrics.xqm";
 
 declare namespace rest = "http://exquery.org/ns/restxq";
 declare namespace http = "http://expath.org/ns/http-client";
@@ -274,6 +275,7 @@ declare
   %output:method("json")
 function api:corpus-data($corpusname) {
   let $corpus := ectei:get-corpus-info-by-name($corpusname)
+  let $metrics := metrics:corpus($corpusname)
   let $collection := concat($config:data-root, "/", $corpusname)
   return
     if (not($corpus?name) or not(xmldb:collection-available($collection))) then
@@ -281,7 +283,10 @@ function api:corpus-data($corpusname) {
         <http:response status="404"/>
       </rest:response>
     else
-      $corpus
+      map:merge((
+        $corpus,
+        map {"metrics": $metrics}
+      ))
 };
 
 (:~
