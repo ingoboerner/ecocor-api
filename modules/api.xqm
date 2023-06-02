@@ -5,6 +5,7 @@ module namespace api = "http://ecocor.org/ns/exist/api";
 import module namespace config = "http://ecocor.org/ns/exist/config" at "config.xqm";
 import module namespace ecutil = "http://ecocor.org/ns/exist/util" at "util.xqm";
 import module namespace ectei = "http://ecocor.org/ns/exist/tei" at "tei.xqm";
+import module namespace entities = "http://ecocor.org/ns/exist/entities" at "entities.xqm";
 
 declare namespace rest = "http://exquery.org/ns/restxq";
 declare namespace http = "http://expath.org/ns/http-client";
@@ -160,7 +161,7 @@ function api:corpora-post-tei($data, $auth) {
         util:log-system-out("creating corpus"),
         util:log-system-out($data),
         xmldb:create-collection($config:data-root, $name),
-        xmldb:create-collection($config:extractor-root, $name),
+        xmldb:create-collection($config:entities-root, $name),
         xmldb:store($tei-dir, "corpus.xml", $data),
         map {
           "name": $name,
@@ -251,7 +252,7 @@ function api:corpora-post-json($data) {
       util:log-system-out("creating corpus"),
       util:log-system-out($corpus),
       xmldb:create-collection($config:data-root, $name),
-      xmldb:create-collection($config:extractor-root, $name),
+      xmldb:create-collection($config:entities-root, $name),
       xmldb:store($tei-dir, "corpus.xml", $corpus),
       $json
     )
@@ -391,7 +392,7 @@ function api:delete-corpus($corpusname, $auth) {
         if ($url = $corpus/base-uri()) then
         (
           xmldb:remove($config:data-root || "/" || $corpusname),
-          xmldb:remove($config:extractor-root || "/" || $corpusname),
+          xmldb:remove($config:entities-root || "/" || $corpusname),
           map {
             "message": "corpus deleted",
             "uri": $url
@@ -549,4 +550,31 @@ function api:play-delete($corpusname, $textname, $data, $auth) {
       let $filename := $textname || ".xml"
       let $collection := $config:data-root || "/" || $corpusname
       return (xmldb:remove($collection, $filename))
+};
+
+(:~
+ : Get segments for a single text
+ :
+ : This provides a JSON object that can serve as payload for the extractor
+ : service.
+ :
+ : @param $corpusname Corpus name
+ : @param $textname Text name
+ : @result JSON object
+ :)
+declare
+  %rest:GET
+  %rest:path("/ecocor/corpora/{$corpusname}/texts/{$textname}/segments")
+  %rest:produces("application/json")
+  %output:media-type("application/json")
+  %output:method("json")
+function api:text-segments($corpusname, $textname) {
+  let $doc := ecutil:get-doc($corpusname, $textname)
+  return
+    if (count($doc)) then
+      entities:segment($doc/tei:TEI)
+    else
+      <rest:response>
+        <http:response status="404"/>
+      </rest:response>
 };
