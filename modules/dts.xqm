@@ -197,7 +197,8 @@ function ecdts:documents($id, $ref, $start, $end, $format) {
 
                 if ( $ref ) then
                     (: requested a fragment :)
-                    (: local:get-fragment-of-doc($tei, $ref) :)
+                    local:get-fragment-of-doc($tei, $ref)
+                    (:
                     (
                         <rest:response>
                             <http:response status="501"/>
@@ -207,6 +208,7 @@ function ecdts:documents($id, $ref, $start, $end, $format) {
                             <description>Requesting a fragment of the document is not implemented.</description>
                         </error>
                     )
+                    :)
 
 
                 else if ( $start and $end ) then
@@ -281,4 +283,56 @@ declare function local:get-full-doc($tei as element(tei:TEI)) {
                 </rest:response>,
                 $tei
                 )
+};
+
+(:~
+ : Return a document fragment
+ :
+ : @param $tei TEI of the Document
+ : @param $ref identifier of the fragment requested
+ : :)
+declare function local:get-fragment-of-doc($tei as element(tei:TEI), $ref as xs:string) {
+    let $id := $tei/@xml:id/string()
+
+    let $fragment :=
+        switch($ref)
+        (: structures on level 1 :)
+        case "front" return $tei//tei:front
+        case "body" return $tei//tei:body
+        case "back" return $tei//tei:back
+        default return $tei/id($ref)
+
+    (: Link Header – see https://distributed-text-services.github.io/specifications/Documents-Endpoint.html#get-responses :)
+
+    (: let $link-header := local:link-header-of-fragment($tei,$ref) :)
+    let $link-header := ()
+
+
+
+    return
+        if ( not($fragment) ) then
+            (
+                <rest:response>
+                    <http:response status="404"/>
+                </rest:response>,
+                <error statusCode="404" xmlns="https://w3id.org/dts/api#">
+                    <title>Not found</title>
+                    <description>Fragment with the identifier '{$ref}' does not exist.</description>
+                </error>
+            )
+        else
+
+            (
+                <rest:response>
+                    <http:response status="200">
+                       {$link-header}
+                    </http:response>
+                </rest:response>,
+
+                <TEI xmlns="http://www.tei-c.org/ns/1.0">
+                    <dts:fragment xmlns:dts="https://w3id.org/dts/api#">
+                        {$fragment}
+                    </dts:fragment>
+                </TEI>
+            )
 };
